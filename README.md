@@ -1,8 +1,7 @@
 # Front-End Deep Practice
 
 A focused journey to deeply practice front-end development by building small, real-world projects.  
-Inspired by Daniel Coyle's *The Talent Code*.
-**Emphasizing struggle, mistakes, and rapid growth through deep practice**.
+Inspired by Daniel Coyle's *The Talent Code* **emphasizing struggle, mistakes, and rapid growth through deep practice**.
 
 ## Goals
 - Build real UI components and small applications from scratch.
