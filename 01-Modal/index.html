@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>01-Modal</title>
+  <style>
+    /* General body styling */
+    :root {
+      --fg: blue;
+      --bg: #fff;
+    }
+
+    * {
+      font-size: 22px;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: monospace;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      height: 100vh; /* Optional: make it full height */
+    }
+
+    .left {
+      height: 100%;
+      display: flex;
+      padding: 44px 44px 0 44px;
+    }
+
+    .right {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 22px;
+      padding-top: 44px;
+      align-content: flex-start;
+    }
+
+    /* Styles for the draggable form window */
+    #draggableForm {
+      background: var(--bg);
+      width: 600px;
+      height: 600px;
+      border: 1px solid var(--fg);
+      position: absolute;
+      top: 100px;
+      left: 100px;
+      display: none; /* Hidden by default */
+    }
+
+    /* Header of the form (used for dragging) */
+    .form-header {
+      color: var(--fg);
+      border-bottom: solid 1px var(--fg);
+      padding: 8px;
+      cursor: move; /* Show move cursor */
+      user-select: none; /* Prevent text selection while dragging */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Close (X) button styling */
+    .close-btn {
+      color: var(--fg);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0 5px;
+    }
+
+    /* Padding for form content */
+    form {
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    label {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      align-items: center;
+    }
+
+    input {
+      border: solid 1px var(--fg);
+      font-family: monospace;
+      padding: 0 8px;
+    }
+
+    button {
+      font-family: monospace;
+      background-color: var(--bg);
+      border: solid 1px var(--fg);
+      color: var(--fg);
+      box-shadow: 2px 2px var(--fg);
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.1s ease; /* Smooth press effect */
+      align-self: start;
+    }
+
+    button:active {
+      box-shadow: 0px 0px var(--fg); /* "Inset" look when pressed */
+      transform: translate(2px, 2px); /* Moves the button down/right */
+    }
+
+    input:active {
+      background-color: var(--bg);
+    }
+
+    /* Style for the cards that appear on submit */
+    .info-card {
+      background: var(--bg);
+      color: var(--fg);
+      border: solid 1px var(--fg);
+      padding: 16px;
+      position: relative;
+      width: 300px;
+      font-size: 18px;
+    }
+
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      padding: 4px;
+    }
+
+    .card-close {
+      box-shadow: none;
+      border: none;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      color: var(--fg);
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="left">
+      <!-- Button to open the form -->
+      <button id="showFormBtn">+</button>
+    </div>
+
+    <div class="right"></div>
+  </div>
+
+  <!-- The draggable form container -->
+  <div id="draggableForm">
+    <!-- Header section for dragging and close button -->
+    <div class="form-header" id="formHeader">
+      Form Title
+      <button class="close-btn" id="closeBtn">&times;</button> <!-- "X" button -->
+    </div>
+
+    <!-- The form itself -->
+    <form id="userForm">
+      <label>Name: <input type="text" name="name" /></label>
+      <label>Email: <input type="email" name="email" /></label>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    // Get references to the button and form elements
+    const showFormBtn = document.getElementById("showFormBtn");
+    const draggableForm = document.getElementById("draggableForm");
+    const formHeader = document.getElementById("formHeader");
+    const closeBtn = document.getElementById("closeBtn");
+    const userForm = document.getElementById("userForm");
+    const right = document.querySelector('.right');
+
+    // Show the form and center it in the viewport
+    showFormBtn.addEventListener("click", () => {
+      draggableForm.style.display = "block";
+
+      const formWidth = draggableForm.offsetWidth;
+      const formHeight = draggableForm.offsetHeight;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      draggableForm.style.left = `${(windowWidth - formWidth) / 2}px`;
+      draggableForm.style.top = `${(windowHeight - formHeight) / 2}px`;
+    });
+
+    // Hide the form when the close (X) button is clicked
+    closeBtn.addEventListener("click", () => {
+      draggableForm.style.display = "none";
+    });
+
+    // Dragging functionality
+    let offsetX = 0, offsetY = 0;
+    let isDragging = false;
+
+    formHeader.addEventListener("mousedown", (e) => {
+      if (e.target !== closeBtn) {
+        isDragging = true;
+        offsetX = e.clientX - draggableForm.offsetLeft;
+        offsetY = e.clientY - draggableForm.offsetTop;
+      }
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        draggableForm.style.left = `${e.clientX - offsetX}px`;
+        draggableForm.style.top = `${e.clientY - offsetY}px`;
+      }
+    });
+
+    // Handle form submission: create a card with the name/email
+    userForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = userForm.elements["name"].value.trim();
+      const email = userForm.elements["email"].value.trim();
+      if (!name || !email) return;
+
+      const card = document.createElement("div");
+      card.className = "info-card";
+      card.innerHTML = `
+        <div class="card-content">
+          <strong>${name}</strong><br />
+          <span>${email}</span>
+        </div>
+        <button class="card-close">&times;</button>
+      `;
+
+      right.appendChild(card);
+
+      card.querySelector(".card-close").addEventListener("click", () => {
+        card.remove();
+      });
+
+      draggableForm.style.display = "none";
+      userForm.reset();
+    });
+  </script>
+
+</body>
+</html>
