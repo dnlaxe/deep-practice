@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>01-Modal</title>
+  <style>
+    :root {
+      --fg: rgb(56, 56, 56);
+      --bg: #f6feff;
+    }
+
+    * {
+      font-size: 22px;
+      color: var(--fg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    ul {
+      list-style: none;
+      display: flex;
+      gap: 22px;
+    }
+
+    body {
+      font-family: monospace;
+      padding: 22px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    .hamburger span {
+      height: 3px;
+      width: 30px;
+      margin: 5px 0;
+      transition: transform 0.5s ease-in-out, background-color 0.5s ease-in-out;
+      transform-origin: center;
+      background-color: var(--fg);
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    .hamburger.active span {
+      background-color: var(--bg);
+    }
+
+    @media (max-width: 768px) {
+      .hamburger {
+        display: flex;
+      }
+
+      .desktop-nav {
+        display: none;
+      }
+    }
+
+    .modal {
+      display: flex;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--fg);
+      z-index: 5;
+      transform: translateY(-100%);
+      transition: transform 0.5s ease-in-out;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active {
+      transform: translateY(0);
+    }
+
+    .modal-nav {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-nav li a {
+      font-size: 2rem;
+      color: var(--bg);
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div>The Company</div>
+    <ul class="desktop-nav">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
+
+  <div class="modal">
+    <ul class="modal-nav">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </div>
+
+
+  <script>
+    const hamburger = document.querySelector('.hamburger');
+    const modal = document.querySelector('.modal');
+    const modalLinks = document.querySelectorAll('.modal li a');
+
+    hamburger.addEventListener('click', () => {
+      modal.classList.toggle('active');
+      hamburger.classList.toggle('active');
+    });
+
+    modalLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        modal.classList.remove('active');
+        hamburger.classList.remove('active');
+      });
+    });
+
+  </script>
+
+</body>
+</html>
