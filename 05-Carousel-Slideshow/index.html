@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>05-Carousel-Slideshow</title>
+  <style>
+    :root {
+      --fg: rgb(110, 104, 104);
+      --bg: #ffffff;
+      --neon:  #ff9a9e;;
+    }
+
+    * {
+      font-size: 22px;
+      color: var(--fg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .carousel-container {
+      height: 80%;
+      position: relative;
+      width: 80%;
+      overflow: auto;
+      scroll-snap-type: x mandatory;
+      display: flex;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+    }
+
+    .slide1 { background: #ff9a9e; }
+    .slide2 { background: #a1c4fd; }
+    .slide3 { background: #c2e9fb; }
+
+    .indicators {
+      display: flex;
+      gap: 16px;
+      margin-top: 22px;
+      justify-content: center;
+    }
+
+    .indicators .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--fg);
+      transition: background 0.3s;
+    }
+
+    .indicators .dot.active {
+      background: var(--neon);
+    }
+
+    .toggle-label {
+      width: 200px;
+      height: 50px;
+      border-radius: 10px;
+      padding: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: solid 1px var(--fg);
+    }
+
+    .toggle-label::after {
+      content: '';
+      border-radius: 10px;
+      width: 96px;
+      height: 44px;
+      background: var(--fg);
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      transition: transform 0.3s;
+    }
+
+    input[type="checkbox"]:checked + .toggle-label {
+      background: var(--neon);
+    }
+
+    input[type="checkbox"]:checked + .toggle-label::after {
+      transform: translateX(98px);
+    }
+
+    button {
+      height: 50px;
+      width: 150px;
+      background-color: transparent;
+      border: solid 1px var(--fg);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      width: 80%;
+      margin: 22px 0;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <button id="prevBtn">previous</button>
+
+    <div class="autoplay">
+      <input type="checkbox" id="autoplayToggle" hidden>
+      <label for="autoplayToggle" class="toggle-label"><p>stop</p><p>play</p></label>
+    </div>
+
+    <button id="nextBtn">next</button>
+  </div>
+
+
+  
+  <div class="carousel-container" id="carousel">
+    <div class="carousel-slide slide1">Slide 1</div>
+    <div class="carousel-slide slide2">Slide 2</div>
+    <div class="carousel-slide slide3">Slide 3</div>
+  </div>
+
+  <div class="indicators" id="indicators"></div>
+
+
+  <script>
+    const carousel = document.getElementById('carousel');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const indicatorsContainer = document.getElementById('indicators');
+  
+    // Create dots
+    slides.forEach((_, index) => {
+      const dot = document.createElement('div');
+      dot.classList.add('dot');
+      if (index === 0) dot.classList.add('active');
+      indicatorsContainer.appendChild(dot);
+    });
+  
+    const dots = indicatorsContainer.querySelectorAll('.dot');
+  
+    function updateActiveDot() {
+      const scrollLeft = carousel.scrollLeft;
+      const slideWidth = carousel.clientWidth;
+      const index = Math.round(scrollLeft / slideWidth);
+  
+      dots.forEach(dot => dot.classList.remove('active'));
+      if (dots[index]) dots[index].classList.add('active');
+    }
+  
+    // Scroll to next or previous
+    nextBtn.addEventListener('click', () => {
+      carousel.scrollBy({ left: carousel.clientWidth, behavior: 'smooth' });
+    });
+  
+    prevBtn.addEventListener('click', () => {
+      carousel.scrollBy({ left: -carousel.clientWidth, behavior: 'smooth' });
+    });
+  
+    // Update active dot on scroll
+    carousel.addEventListener('scroll', () => {
+      requestAnimationFrame(updateActiveDot);
+    });
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    carousel.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const delta = touchEndX - touchStartX;
+
+      if (Math.abs(delta) > 50) { // threshold
+        if (delta < 0) {
+          // Swiped left
+          carousel.scrollBy({ left: carousel.clientWidth, behavior: 'smooth' });
+        } else {
+          // Swiped right
+          carousel.scrollBy({ left: -carousel.clientWidth, behavior: 'smooth' });
+        }
+      }
+    }
+
+    const autoplayBtn = document.getElementById('autoplayBtn');
+    let autoplayInterval = null;
+    let isPlaying = false;
+
+    function startAutoplay() {
+      autoplayInterval = setInterval(() => {
+        const scrollLeft = carousel.scrollLeft;
+        const slideWidth = carousel.clientWidth;
+        const maxScrollLeft = carousel.scrollWidth - slideWidth;
+
+        if (scrollLeft + 5 >= maxScrollLeft) {
+          // If at or near the last slide, go back to first
+          carousel.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          // Scroll to the next slide
+          carousel.scrollBy({ left: slideWidth, behavior: 'smooth' });
+        }
+      }, 3000);
+      isPlaying = true;
+      autoplayBtn.textContent = 'Pause';
+    }
+
+    function stopAutoplay() {
+      clearInterval(autoplayInterval);
+      isPlaying = false;
+      autoplayBtn.textContent = 'Play';
+    }
+    
+    const autoplayToggle = document.getElementById('autoplayToggle');
+
+    autoplayToggle.addEventListener('change', () => {
+      if (autoplayToggle.checked) {
+        startAutoplay();
+      } else {
+        stopAutoplay();
+      }
+    });
+
+
+  </script>
+  
+
+</body>
+</html>

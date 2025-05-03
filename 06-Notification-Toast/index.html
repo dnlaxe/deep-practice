@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>06-Notification-Toast</title>
+
+<style>
+    :root {
+      --fg: rgb(24, 24, 24);
+      --bg: #ffffff;
+      --neon:  #ff9a9e;;
+    }
+
+    * {
+      font-size: 22px;
+      color: var(--fg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    #toast-container {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 9999;
+    }
+
+    .toast {
+      color: var(--bg);
+      padding: 12px 20px;
+      width: 500px;
+      word-wrap: break-word;
+      white-space: normal;
+      opacity: 0;
+      animation: fadeInOut 4s ease-in-out;
+    }
+
+    .toast.success {
+      background-color: #28a745; /* green */
+    }
+
+    .toast.error {
+      background-color: #dc3545; /* red */
+    }
+
+    .toast.info {
+      background-color: #007bff; /* blue */
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(20px); }
+      10%, 90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+
+    input#toast-message {
+      padding: 8px;
+      font-size: 16px;
+      margin-right: 8px;
+      width: 300px;
+    }
+
+
+</style>
+
+</head>
+
+<body>
+
+  <input type="text" id="toast-message" placeholder="Enter your message">
+
+  <button id="success-btn">Success</button>
+  <button id="error-btn">Error</button>
+  <button id="info-btn">Info</button>
+  
+  <div id="toast-container"></div>
+  
+  
+
+<script>
+
+document.getElementById('success-btn').addEventListener('click', () => {
+  handleToast('success');
+});
+
+document.getElementById('error-btn').addEventListener('click', () => {
+  handleToast('error');
+});
+
+document.getElementById('info-btn').addEventListener('click', () => {
+  handleToast('info');
+});
+
+function handleToast(type) {
+  const input = document.getElementById('toast-message');
+  const message = input.value.trim();
+
+  if (message) {
+    showToast(message, type);
+    input.value = '';
+  }
+}
+
+function showToast(message, type) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 4000);
+}
+
+
+</script>
+
+</body>
+
+</html>
