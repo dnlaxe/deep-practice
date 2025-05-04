@@ -63,9 +63,32 @@
       padding: 8px;
       font-size: 16px;
       margin-right: 8px;
-      width: 300px;
+      width: 100%;
+      text-align: center;
     }
 
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      place-items: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      width: 400px;
+      gap: 22px;
+      padding: 22px;
+      border: solid 1px black;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
 
 </style>
 
@@ -73,15 +96,17 @@
 
 <body>
 
-  <input type="text" id="toast-message" placeholder="Enter your message">
+  <div class="container">
+    <input type="text" id="toast-message" placeholder="Enter your message">
 
-  <button id="success-btn">Success</button>
-  <button id="error-btn">Error</button>
-  <button id="info-btn">Info</button>
+    <div class="buttons">
+      <button id="success-btn">Success</button>
+      <button id="error-btn">Error</button>
+      <button id="info-btn">Info</button>
+    </div>
+  </div>
   
   <div id="toast-container"></div>
-  
-  
 
 <script>
 

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>07-Star-Rating-Widget</title>
+
+<style>
+    :root {
+      --fg: rgb(139, 133, 133);
+      --bg: #f5f5f5;
+      --neon: rgb(255, 217, 0);
+    }
+
+    * {
+      font-size: 220px;
+      color: var(--fg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    .star-rating {
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+    }
+
+    .star {
+      color: var(--fg);
+      transition: color 0.2s;
+    }
+
+    .star.hover,
+    .star.selected {
+      color: var(--neon);
+    }
+
+
+    #rating-value {
+      font-size: 0.4rem;
+      text-align: center;
+      height: auto;
+    }
+
+
+</style>
+
+</head>
+  <div class="star-rating" id="starRating">
+    <span class="star" data-value="1">&#9733;</span>
+    <span class="star" data-value="2">&#9733;</span>
+    <span class="star" data-value="3">&#9733;</span>
+    <span class="star" data-value="4">&#9733;</span>
+    <span class="star" data-value="5">&#9733;</span>
+  </div>
+
+  <div id="rating-value"></div>
+
+<body>
+
+<script>
+
+  const stars = document.querySelectorAll('.star');
+  const ratingValue = document.getElementById('rating-value');
+  let selectedRating = 0;
+
+  stars.forEach((star, index) => {
+    star.addEventListener('mouseover', () => {
+      highlightStars(index);
+    });
+
+    star.addEventListener('mouseout', () => {
+      highlightStars(selectedRating - 1);
+    });
+
+    star.addEventListener('click', () => {
+      selectedRating = index + 1;
+      if (selectedRating === 1) {
+        ratingValue.textContent = `You rated this ${selectedRating} star.`;
+      } else {
+        ratingValue.textContent = `You rated this ${selectedRating} stars.`;
+      }
+    });
+  });
+
+  function highlightStars(index) {
+    stars.forEach((star, i) => {
+      star.classList.toggle('hover', i <= index);
+      star.classList.toggle('selected', i < selectedRating);
+    });
+  }
+
+</script>
+
+</body>
+
+</html>
