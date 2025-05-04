@@ -7,7 +7,7 @@
     :root {
       --fg: rgb(32, 32, 32);
       --bg: #ffffff;
-      --neon: #c22727;;
+      --neon: #276ac2;;
     }
 
     * {
@@ -58,21 +58,20 @@
     }
 
     .indicators .dot {
-      width: 10px;
-      height: 10px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      background: var(--fg);
+      background: lightgray;
       transition: background 0.3s;
     }
 
     .indicators .dot.active {
-      background: var(--neon);
+      background: var(--fg);
     }
 
     .toggle-label {
       width: 200px;
       height: 50px;
-      border-radius: 10px;
       padding: 22px;
       display: flex;
       justify-content: space-between;
@@ -85,7 +84,6 @@
 
     .toggle-label::after {
       content: '';
-      border-radius: 10px;
       width: 96px;
       height: 44px;
       background: var(--fg);
@@ -99,15 +97,6 @@
       transform: translateX(98px);
     }
 
-    button {
-      height: 50px;
-      width: 150px;
-      background-color: transparent;
-      border: solid 1px var(--fg);
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
     .controls {
       display: flex;
       justify-content: space-between;
@@ -115,6 +104,9 @@
       margin: 22px 0;
     }
 
+    button {
+      cursor: pointer;
+    }
 
   </style>
 </head>

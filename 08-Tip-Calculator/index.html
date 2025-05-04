@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>08-Tip-Calculator</title>
+
+<style>
+    :root {
+      --fg: rgb(32, 31, 31);
+      --bg: #f5f5f5;
+    }
+
+    * {
+      font-size: 22px;
+      color: var(--fg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    body {
+      padding: 22px;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin: 22px 0;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    #tipPercent {
+      width: 25ch;
+    }
+
+    h2 {
+      position: relative;
+    }
+
+    h2::before {
+      position: absolute;
+      content: "";
+      height: 2px;
+      background-color: var(--fg);
+      width: 190px;
+      bottom: -8px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+</style>
+
+</head>
+
+
+<body>
+
+  <h2>Tip Calculator</h2>
+  <div class="input-group">
+    <label for="billAmount">Total -></label>
+    <input type="number" id="billAmount" placeholder="Enter bill amount" />
+  </div>
+  <div class="input-group">
+    <label>Tip % -></label>
+    <div class="tip-buttons">
+      <button onclick="setTip(10)">10%</button>
+      <button onclick="setTip(15)">15%</button>
+      <button onclick="setTip(20)">20%</button>
+    </div>
+    <input type="number" id="tipPercent" placeholder="Or enter custom tip %" />
+  </div>
+
+  <div class="error" id="error"></div>
+  <div class="result" id="result"></div>
+
+<script>
+    const billInput = document.getElementById('billAmount');
+    const tipInput = document.getElementById('tipPercent');
+    const resultDiv = document.getElementById('result');
+    const errorDiv = document.getElementById('error');
+    const tipButtons = document.querySelectorAll('.tip-buttons button');
+
+    billInput.addEventListener('input', calculateTip);
+    tipInput.addEventListener('input', () => {
+      clearActiveButtons();
+      calculateTip();
+    });
+
+    function setTip(value) {
+      tipInput.value = value;
+      clearActiveButtons();
+      [...tipButtons].forEach(btn => {
+        if (btn.textContent === `${value}%`) btn.classList.add('active');
+      });
+      calculateTip();
+    }
+
+    function clearActiveButtons() {
+      tipButtons.forEach(btn => btn.classList.remove('active'));
+    }
+
+    function calculateTip() {
+      const bill = parseFloat(billInput.value);
+      const tipPercent = parseFloat(tipInput.value);
+
+      if (!billInput.value || !tipInput.value) {
+        resultDiv.innerHTML = '';
+        errorDiv.textContent = '';
+        return;
+      }
+
+      if (isNaN(bill) || isNaN(tipPercent) || bill < 0 || tipPercent < 0) {
+        errorDiv.textContent = 'Please enter valid positive numbers.';
+        resultDiv.innerHTML = '';
+        return;
+      }
+
+      errorDiv.textContent = '';
+
+      const tip = +(bill * (tipPercent / 100)).toFixed(2);
+      const total = +(bill + tip).toFixed(2);
+
+      resultDiv.innerHTML = `
+        Tip: $${tip.toFixed(2)} // 
+        Total: $${total.toFixed(2)}
+      `;
+    }
+
+</script>
+
+</body>
+
+</html>
