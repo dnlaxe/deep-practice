@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>09-Countdown-Timer-ii</title>
+  <style>
+    :root {
+      --fg: rgb(227, 240, 250);
+      --bg: #466adf;
+    }
+
+    * {
+      font-size: 22px;
+      color: var(--fg);
+      background-color: var(--bg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .inputs {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .inputs select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    #countdownDisplay {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    #countdownDisplay > div {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--fg);
+      font-size: 5rem;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      height: 100px;
+      text-align: center;
+      border: 1px solid var(--fg);
+      background-color: var(--bg);
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border: 1px solid var(--fg);
+    }
+
+  </style>
+</head>
+<body>
+  <form id="countdownForm">
+    <div class="inputs">
+      <select id="yearSelect" required>
+        <option value="" disabled selected>Year</option>
+      </select>
+
+      <select id="monthSelect" required>
+        <option value="" disabled selected>Month</option>
+      </select>
+
+      <select id="daySelect" required>
+        <option value="" disabled selected>Day</option>
+      </select>
+
+      <select id="hourSelect" required>
+        <option value="" disabled selected>Hour</option>
+      </select>
+
+      <select id="minuteSelect" required>
+        <option value="" disabled selected>Minute</option>
+      </select>
+    </div>
+  </form>
+
+  <h2 id="countdownDisplay"></h2>
+
+  <script>
+    const yearSelect = document.getElementById('yearSelect');
+    const monthSelect = document.getElementById('monthSelect');
+    const daySelect = document.getElementById('daySelect');
+    const hourSelect = document.getElementById('hourSelect');
+    const minuteSelect = document.getElementById('minuteSelect');
+    const countdownDisplay = document.getElementById('countdownDisplay');
+    let timerInterval;
+
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y <= currentYear + 5; y++) {
+      yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+    }
+
+    for (let m = 0; m < 12; m++) {
+      const monthName = new Date(2000, m).toLocaleString('default', { month: 'short' });
+      monthSelect.innerHTML += `<option value="${m}">${monthName}</option>`;
+    }
+
+    for (let i = 0; i < 60; i++) {
+      if (i < 24) hourSelect.innerHTML += `<option value="${i}">${pad(i)}</option>`;
+      minuteSelect.innerHTML += `<option value="${i}">${pad(i)}</option>`;
+    }
+
+    function updateDays() {
+      const year = parseInt(yearSelect.value);
+      const month = parseInt(monthSelect.value);
+      const previouslySelectedDay = parseInt(daySelect.value);
+
+      if (isNaN(year) || isNaN(month)) {
+        daySelect.innerHTML = '<option value="" disabled selected>Day</option>';
+        return;
+      }
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      daySelect.innerHTML = '';
+
+      const placeholder = document.createElement('option');
+      placeholder.disabled = true;
+      placeholder.selected = !previouslySelectedDay || previouslySelectedDay > daysInMonth;
+      placeholder.textContent = 'Day';
+      placeholder.value = '';
+      daySelect.appendChild(placeholder);
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const option = document.createElement('option');
+        option.value = d;
+        option.textContent = pad(d);
+        if (d === previouslySelectedDay && d <= daysInMonth) {
+          option.selected = true;
+        }
+        daySelect.appendChild(option);
+      }
+    }
+
+    yearSelect.addEventListener('change', updateDays);
+    monthSelect.addEventListener('change', updateDays);
+    updateDays(); // Initialize
+
+    const selects = [yearSelect, monthSelect, daySelect, hourSelect, minuteSelect];
+    selects.forEach(select => {
+      select.addEventListener('change', handleInputChange);
+    });
+
+    function handleInputChange() {
+      const year = parseInt(yearSelect.value);
+      const month = parseInt(monthSelect.value);
+      const day = parseInt(daySelect.value);
+      const hour = parseInt(hourSelect.value);
+      const minute = parseInt(minuteSelect.value);
+
+      if (
+        isNaN(year) || isNaN(month) || isNaN(day) ||
+        isNaN(hour) || isNaN(minute)
+      ) {
+        if (timerInterval) clearInterval(timerInterval);
+        return;
+      }
+
+      const targetDate = new Date(year, month, day, hour, minute);
+      const now = new Date();
+
+      if (targetDate <= now) {
+        countdownDisplay.textContent = 'Please select a future date and time.';
+        if (timerInterval) clearInterval(timerInterval);
+        return;
+      }
+
+      if (timerInterval) clearInterval(timerInterval);
+      updateCountdown();
+      timerInterval = setInterval(updateCountdown, 1000);
+
+      function updateCountdown() {
+        const now = new Date();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+          clearInterval(timerInterval);
+          countdownDisplay.textContent = "Time's up!";
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        countdownDisplay.innerHTML = `
+          <div>${pad(days)}d</div>
+          <div>${pad(hours)}h</div>
+          <div>${pad(minutes)}m</div>
+          <div>${pad(seconds)}s</div>
+        `;
+      }
+    }
+
+    function pad(n) {
+      return n.toString().padStart(2, '0');
+    }
+  </script>
+</body>
+</html>
