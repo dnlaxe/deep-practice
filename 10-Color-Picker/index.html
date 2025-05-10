@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>10-Color-Picker</title>
+  <style>
+    :root {
+      --fg: rgb(31, 33, 34);
+      --bg: #cacaca;
+    }
+
+    * {
+      font-size: 22px;
+      color: var(--fg);
+      background-color: var(--bg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    html, body {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body {
+      padding: 22px;
+    }
+
+    main {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .blob {
+      width: 380px;
+      height: 380px;
+      background-color: hsl(185, 56%, 35%);
+      animation: morph 12s linear infinite, spin 24s ease-in-out infinite alternate;
+      transition: background-color 0.6s ease-in-out;
+      border-radius: 50% 40% 30% 60% / 60% 50% 40% 50%;
+      cursor: pointer;
+      box-shadow: 20px 20px 20px rgb(54, 54, 54);
+    }
+
+    @keyframes morph {
+      0% { border-radius: 42% 58% 64% 36% / 60% 40% 60% 40%; transform: scale(1); }
+      10% { border-radius: 46% 54% 62% 38% / 55% 45% 65% 35%; transform: scale(0.975); }
+      20% { border-radius: 50% 30% 60% 40% / 50% 70% 30% 60%; transform: scale(0.95); }
+      30% { border-radius: 43% 57% 58% 42% / 57% 43% 50% 50%; transform: scale(0.925); }
+      40% { border-radius: 35% 65% 55% 45% / 65% 35% 70% 30%; transform: scale(0.9); }
+      50% { border-radius: 48% 52% 42% 58% / 60% 40% 55% 45%; transform: scale(0.975); }
+      60% { border-radius: 60% 40% 30% 70% / 55% 60% 45% 50%; transform: scale(1.05); }
+      70% { border-radius: 52% 48% 33% 67% / 50% 65% 40% 55%; transform: scale(1.075); }
+      80% { border-radius: 45% 55% 35% 65% / 40% 75% 35% 60%; transform: scale(1.1); }
+      90% { border-radius: 44% 56% 50% 50% / 50% 55% 45% 50%; transform: scale(1.05); }
+      100% { border-radius: 42% 58% 64% 36% / 60% 40% 60% 40%; transform: scale(1); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 200px;
+      height: 6px;
+      background: #f1efef;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 10px;
+      width: 10px;
+      border-radius: 50%;
+      background: var(--fg);
+      cursor: pointer;
+      border: none;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    footer {
+      text-align: center;
+    }
+
+    @media (max-width: 1024px) {
+      header {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        margin-top: 22px;
+      }
+
+      footer {
+        margin-bottom: 22px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="controls">
+    <label>Hue: 
+      <input type="range" id="hue" min="0" max="360" value="0">
+    </label>
+    <br>
+    <label>Saturation: 
+      <input type="range" id="saturation" min="0" max="100" value="100">
+    </label>
+    <br>
+    <label>Lightness: 
+      <input type="range" id="lightness" min="0" max="100" value="50">
+    </label>
+  </header>
+
+  <main>
+    <div class="blob" id="blob"></div>
+  </main>
+
+  <footer class="hsl-output" id="hslText">
+    hsl(0, 100%, 50%)
+  </footer>
+
+  <script>
+    const blob = document.getElementById('blob');
+    const hslText = document.getElementById('hslText');
+    const hueSlider = document.getElementById('hue');
+    const saturationSlider = document.getElementById('saturation');
+    const lightnessSlider = document.getElementById('lightness');
+
+    // Create hidden color input
+    const colorPicker = document.createElement('input');
+    colorPicker.type = 'color';
+    colorPicker.style.display = 'none';
+    document.body.appendChild(colorPicker);
+
+    // Blob click opens color picker
+    blob.addEventListener('click', () => {
+      colorPicker.click();
+    });
+
+    function updateColor(h, s, l) {
+      const hsl = `hsl(${h}, ${s}%, ${l}%)`;
+      blob.style.backgroundColor = hsl;
+      hslText.textContent = hsl;
+    }
+
+    // Sliders control color
+    [hueSlider, saturationSlider, lightnessSlider].forEach(slider => {
+      slider.addEventListener('input', () => {
+        const h = hueSlider.value;
+        const s = saturationSlider.value;
+        const l = lightnessSlider.value;
+        updateColor(h, s, l);
+      });
+    });
+
+    // Color picker updates sliders
+    colorPicker.addEventListener('input', (e) => {
+      const hex = e.target.value;
+      const rgb = hexToRgb(hex);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      hueSlider.value = Math.round(hsl.h);
+      saturationSlider.value = Math.round(hsl.s * 100);
+      lightnessSlider.value = Math.round(hsl.l * 100);
+      updateColor(hueSlider.value, saturationSlider.value, lightnessSlider.value);
+    });
+
+    function hexToRgb(hex) {
+      const bigint = parseInt(hex.slice(1), 16);
+      return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255
+      };
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: h * 360, s, l };
+    }
+  </script>
+</body>
+</html>
