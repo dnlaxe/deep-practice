@@ -49,12 +49,8 @@
       border: 1px solid black;
     }
 
-    #suggestions li:hover {
+    #suggestions li:hover, #suggestions li.active {
       background-color: #f0f0f0;
-    }
-
-    #suggestions li.active {
-      background-color: #b0d4ff;
     }
 
     .input-wrapper {
@@ -116,6 +112,24 @@
       gap: 1rem;
     }
 
+    /* Apply row-based grid layout for larger screens */
+    @media (min-width: 768px) {
+      #weatherResult {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+      }
+
+      #cityInput {
+        width: 300px;
+          }
+    }
+
+    h1, h2 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.25rem;
+    }
+
   </style>
 </head>
 <body>
@@ -130,63 +144,78 @@
     <div id="weatherResult"></div>
   </div>
 
-<script>
-  const apiKey = '218f3e2de6f2ceb7587145ffb75fa483';
+  <script>
+
+  // Store your OpenWeatherMap API key
+  const apiKey = 'INSERT_YOUR_API_KEY_HERE';
+
+  // Get references to HTML elements for displaying results, status messages, user input, and suggestions
   const resultDiv = document.getElementById('weatherResult');
   const statusMessage = document.getElementById('statusMessage');
   const cityInput = document.getElementById('cityInput');
   const suggestionsList = document.getElementById('suggestions');
 
+  // Track the index of the currently selected suggestion in the autocomplete list
   let selectedIndex = -1;
 
+  // Fetch weather data using latitude and longitude
   async function fetchWeatherByCoords(lat, lon) {
-    statusMessage.innerHTML = '<p>Detecting location...</p>';
+    statusMessage.innerHTML = '<p>Detecting location...</p>'; // Inform the user location is being detected
     try {
+      // Fetch weather data using coordinates
       const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
       );
-      if (!res.ok) throw new Error('Weather data not found');
+      if (!res.ok) throw new Error('Weather data not found'); // Handle non-200 responses
 
-      const data = await res.json();
-      displayWeather(data);
+      const data = await res.json(); // Parse the JSON response
+      displayWeather(data); // Display the weather info
     } catch (err) {
+      // Show an error message
       statusMessage.innerHTML = `<p>Error: ${err.message}</p>`;
     }
   }
 
+  // Fetch weather data based on a city name
   async function fetchWeatherByCity(city) {
     if (!city) {
-      statusMessage.innerHTML = '<p>Please enter a city name.</p>';
+      statusMessage.innerHTML = '<p>Please enter a city name.</p>'; // Warn if input is empty
       return;
     }
 
-    statusMessage.innerHTML = '<p>Loading...</p>';
+    statusMessage.innerHTML = '<p>Loading...</p>'; // Show loading status
 
     try {
+      // Fetch weather data for the given city
       const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`
       );
-      if (!res.ok) throw new Error('City not found');
+      if (!res.ok) throw new Error('City not found'); // Handle errors
 
-      const data = await res.json();
-      displayWeather(data);
+      const data = await res.json(); // Parse response
+      displayWeather(data); // Display weather
     } catch (err) {
+      // Show an error message
       statusMessage.innerHTML = `<p>Error: ${err.message}</p>`;
     }
   }
 
+  // Function to display the weather card
   function displayWeather(data) {
-    statusMessage.innerHTML = '';
+    statusMessage.innerHTML = ''; // Clear previous status
 
+    // Extract relevant data from the API response
     const { name } = data;
     const temp = data.main.temp;
     const desc = data.weather[0].description;
     const icon = data.weather[0].icon;
-    const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+    const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`; // Build URL for weather icon
 
+    // Create a container for the weather card
     const card = document.createElement('div');
-    card.className = 'weather-card';
+    card.className = 'weather-card'; // Apply a class for styling
 
+    // Fill the card with weather data and a close button
     card.innerHTML = `
       <button class="close-btn" title="Remove">×</button>
       <div class="left">
@@ -199,99 +228,106 @@
       </div>
     `;
 
+    // Add functionality to the close button to remove the card
     card.querySelector('.close-btn').addEventListener('click', () => {
       card.remove();
     });
 
+    // Prepend the new card to the results container
     resultDiv.prepend(card);
   }
 
-
-  // Geolocation on page load
+  // On page load, attempt to get the user's location and fetch weather
   window.addEventListener('load', () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          fetchWeatherByCoords(latitude, longitude);
+          const { latitude, longitude } = pos.coords; // Get user's coordinates
+          fetchWeatherByCoords(latitude, longitude); // Fetch weather based on location
         },
         () => {
+          // If location access is denied
           statusMessage.innerHTML = '<p>Location access denied. Please enter a city name.</p>';
         }
       );
     } else {
+      // If geolocation is not supported
       statusMessage.innerHTML = '<p>Geolocation not supported. Please enter a city name.</p>';
     }
   });
 
-  // Fetch autocomplete suggestions
+  // When the user types in the city input field, fetch matching city suggestions
   cityInput.addEventListener('input', async () => {
-    const query = cityInput.value.trim();
-    selectedIndex = -1;
+    const query = cityInput.value.trim(); // Get user input and trim spaces
+    selectedIndex = -1; // Reset selected index for navigation
+
     if (query.length < 2) {
-      suggestionsList.innerHTML = '';
+      suggestionsList.innerHTML = ''; // Clear suggestions if query is too short
       return;
     }
 
     try {
+      // Fetch up to 5 matching city names from the geocoding API
       const res = await fetch(
         `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${apiKey}`
       );
-      const cities = await res.json();
+      const cities = await res.json(); // Parse the JSON response
 
+      // Create list items for each suggestion with location data
       suggestionsList.innerHTML = cities.map(city => {
         const location = `${city.name}, ${city.country}${city.state ? ', ' + city.state : ''}`;
         return `<li data-lat="${city.lat}" data-lon="${city.lon}">${location}</li>`;
       }).join('');
     } catch (err) {
-      console.error('Error fetching suggestions:', err);
+      console.error('Error fetching suggestions:', err); // Log any error
     }
   });
 
-  // Handle arrow keys and enter
+  // Handle keyboard navigation (Arrow Up/Down) and Enter key for suggestion selection
   cityInput.addEventListener('keydown', (e) => {
-    const items = suggestionsList.querySelectorAll('li');
+    const items = suggestionsList.querySelectorAll('li'); // Get all suggestions
     const maxIndex = items.length - 1;
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (selectedIndex < maxIndex) selectedIndex++;
-      updateHighlight(items);
+      if (selectedIndex < maxIndex) selectedIndex++; // Move selection down
+      updateHighlight(items); // Highlight new selection
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (selectedIndex > 0) selectedIndex--;
-      updateHighlight(items);
+      if (selectedIndex > 0) selectedIndex--; // Move selection up
+      updateHighlight(items); // Highlight new selection
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (selectedIndex >= 0 && selectedIndex <= maxIndex) {
-        items[selectedIndex].click();
+        items[selectedIndex].click(); // Simulate click on selected suggestion
       } else {
-        const city = cityInput.value.trim();
-        suggestionsList.innerHTML = '';
-        fetchWeatherByCity(city);
+        const city = cityInput.value.trim(); // Get city input
+        suggestionsList.innerHTML = ''; // Clear suggestions
+        fetchWeatherByCity(city); // Fetch weather by city
         cityInput.value = ''; // Clear input
       }
     }
   });
 
+  // Highlight the selected suggestion and optionally autofill input
   function updateHighlight(items) {
     items.forEach((item, index) => {
-      item.classList.toggle('active', index === selectedIndex);
+      item.classList.toggle('active', index === selectedIndex); // Add 'active' class to selected item
       if (index === selectedIndex) {
-        cityInput.value = item.textContent; // optional: autofill input
+        cityInput.value = item.textContent; // Autofill input with selected item
       }
     });
   }
 
-  // Handle clicking a suggestion
+  // When a user clicks on a suggestion
   suggestionsList.addEventListener('click', (e) => {
     if (e.target.tagName === 'LI') {
-      const lat = e.target.getAttribute('data-lat');
-      const lon = e.target.getAttribute('data-lon');
+      const lat = e.target.getAttribute('data-lat'); // Get latitude
+      const lon = e.target.getAttribute('data-lon'); // Get longitude
 
       cityInput.value = ''; // Clear input
       suggestionsList.innerHTML = ''; // Clear suggestions
-      fetchWeatherByCoords(lat, lon);
+      fetchWeatherByCoords(lat, lon); // Fetch weather using selected location
     }
   });
 

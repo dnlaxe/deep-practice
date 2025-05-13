@@ -1,22 +1,28 @@
-# Front-End Deep Practice: 10-Color-Picker
+# Front-End Deep Practice: 11-Weather-App
 
 ## Features
-- Fully interactive **HSL color picker** with **live visual feedback** on a morphing animated blob.  
-- Users can adjust **hue**, **saturation**, and **lightness** independently via custom **range sliders**.  
-- Includes a **hidden native color picker** that synchronizes with HSL sliders when a color is chosen.  
-- Dynamic updates to a large central **animated blob** that changes color, shape, and rotation continuously.  
-- Displays current color value in **HSL format** in real time beneath the blob.  
-- **Responsive layout** with a focus on simplicity, accessibility, and touch-friendly controls.  
-- Designed with a **monospace UI**, consistent spacing, and adaptable layout for all screen sizes.  
-- **Blob animation** created using CSS keyframes with **fluid morphing and spinning transitions**.
+- **Live weather lookup** based on either **user-entered city** or **automatic geolocation detection**.  
+- **Autocomplete suggestions** powered by OpenWeather's **Geo API**, with intuitive keyboard and mouse navigation.  
+- Displays **dynamic weather cards** with temperature, condition, and icon for each selected location.  
+- Clean and accessible **input UI**, with a **touch-friendly**, responsive layout that works across devices.  
+- **Multiple weather cards** can be added and removed independently using **in-card close buttons**.  
+- Real-time **loading and error feedback** through a status message element.  
+- Weather data includes **city name**, **temperature in Celsius**, **weather description**, and a **representative icon**.  
+- Fully responsive design with **grid layout on wider screens** for optimal presentation of multiple weather cards.  
+- **Keyboard navigation support** using Arrow Keys and Enter for fast and efficient city selection.  
+- Styled using **pure CSS**, with **monospace UI** and consistent spacing for visual clarity.
 
 ## Methods and Techniques Used
-- **CSS Variables** (`--fg`, `--bg`) manage global theming for color consistency and easy customization.  
-- **Range Input Styling** for custom thumb and track appearance without relying on third-party libraries.  
-- **Responsive Flexbox Layout** vertically centers and distributes header, main, and footer elements cleanly.  
-- **CSS Keyframe Animation** enables continuous morphing and rotating of the blob with smooth scaling.  
-- **Event Listeners** on each slider provide real-time updates to the blob and HSL value display.  
-- **HSL to RGB Conversion Logic** parses color input from native picker and syncs it with slider values.  
-- **Hex to RGB Utility** extracts RGB components from a hex color for further HSL calculation.  
-- **Click-to-Open Color Picker** makes the blob interactive and enhances user experience with native controls.  
-- **Clean JavaScript Architecture** with modular functions for readability, clarity, and reusability.
+- **Geolocation API** for automatic location detection on page load.  
+- **OpenWeatherMap API** integration for both **weather data** and **geographic location suggestions**.  
+- **Fetch API with async/await** for clean, modern asynchronous operations and error handling.  
+- **Custom Autocomplete List** that responds to user input and highlights active selection via keyboard.  
+- **Keyboard Accessibility** with full support for arrow navigation and enter key submission.  
+- **Dynamic DOM Manipulation** to generate and remove weather cards on demand.  
+- **Responsive Flex/Grid Layout** that adapts to screen size using media queries.  
+- **Reusable Weather Card UI** with consistent styling and in-card dismissal button.  
+- **CSS Variables** for consistent theming using `--fg` and `--bg`.  
+- **Input Debounce Optimization (manual)** via query length check and fetch limit to reduce API calls.
+
+> ⚠️ To use this app, you need your own OpenWeatherMap API key.  
+> Get a free key at https://openweathermap.org/api and paste it into the `apiKey` variable in the HTML file.
