@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>13-Github-User-Search</title>
+  <style>
+    :root {
+      --fg: rgb(33, 36, 37);
+      --bg: #f5f4f4;
+    }
+
+    * {
+      font-size: 21px;
+      color: var(--fg);
+      background-color: var(--bg);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+      border-color: rgb(214, 213, 213);
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 500px;
+      gap: 1rem;
+      padding-top: 1rem;
+      justify-self: center;
+    }
+
+    #username {
+      padding: 10px;
+      font-size: 16px;
+      border: solid 1px black;
+      background-color: white;
+    }
+
+    #searchBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: solid 1px black;
+      color: var(--bg);
+      background-color: var(--fg);
+    }
+
+    .search {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 3fr 1fr;
+      gap: 11px;
+    }
+
+    .avatar-circle {
+      width: 250px;
+      height: 250px;
+      margin: 0 auto;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border: solid 1px black;
+    }
+
+    .avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Loader styles */
+    .loader {
+      width: 100%;
+      aspect-ratio: 1;
+      display: grid;
+      grid: 50%/50%;
+      border-radius: 50%;
+      border: solid 1px black;
+      animation: 
+        circle 3s   infinite linear alternate;
+    }
+
+    @keyframes circle {
+      0%  {transform: scaleX(1)  rotate(0deg)}
+      50% {transform: scaleX(-1) rotate(-90deg)}
+    }
+
+    #profile {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    #searchBtn:hover {
+      background-color: aquamarine;
+      color: var(--fg);
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>GitHub User Search</h1>
+
+  <div class="search">
+
+  <input type="text" id="username" placeholder="Enter GitHub username" />
+  <button id="searchBtn">Search</button>
+
+  </div>
+  
+  <div id="error"></div>
+  
+  <div id="profile"></div>
+
+  </div>
+
+<body>
+
+  <script>
+
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+      const username = document.getElementById("username").value.trim();
+      const errorDiv = document.getElementById("error");
+      const profileDiv = document.getElementById("profile");
+
+      errorDiv.textContent = "";
+      profileDiv.innerHTML = "";
+
+      if (!username) {
+        errorDiv.textContent = "Please enter a username.";
+        return;
+      }
+
+      // Only show loader if username is provided
+      profileDiv.innerHTML = `
+        <div id="avatar-container" class="avatar-circle">
+          <div class="loader" id="loader"></div>
+        </div>
+      `;
+
+     try {
+        // Start fetch and 2-second timer simultaneously
+        const [res] = await Promise.all([
+          fetch(`https://api.github.com/users/${username}`),
+          new Promise(resolve => setTimeout(resolve, 3000)) // ensures loader shows at least 3 seconds
+        ]);
+
+        if (!res.ok) {
+          if (res.status === 404) throw new Error("User not found.");
+          else throw new Error("API error. Try again later.");
+        }
+
+        const data = await res.json();
+
+        // Replace loader with avatar image
+        const avatarContainer = document.getElementById("avatar-container");
+        avatarContainer.innerHTML = `<img src="${data.avatar_url}" alt="Avatar" />`;
+
+        // Append additional profile info
+        profileDiv.innerHTML += `
+          <h2>${data.login}</h2>
+          <p>${data.bio || "No bio available"}</p>
+          <p>Repos: ${data.public_repos}</p>
+          <p>Followers: ${data.followers} | Following: ${data.following}</p>
+          <a href="${data.html_url}" target="_blank">View Profile</a>
+        `;
+      } catch (err) {
+        profileDiv.innerHTML = ""; // Clear the loader
+        errorDiv.textContent = err.message;
+      }
+    });
+
+      const input = document.getElementById("username");
+      const button = document.getElementById("searchBtn");
+
+      input.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault(); // prevent form submission or page reload
+          button.click(); // trigger the button's click action
+        }
+      });
+
+  </script>
+
+</body>
+</html>

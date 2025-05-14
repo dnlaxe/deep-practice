@@ -45,6 +45,7 @@
 
     /* New Loader Animation */
     .loader {
+      border-radius: 50%;
       color: #0084fd;
       margin: 40px auto;
       width: 15px;
@@ -190,7 +191,7 @@
       }
 
       if (from === to) {
-        resultDisplay.innerText = `${amount} ${from} = ${amount.toFixed(2)} ${to}`;
+        resultDisplay.innerText = `${amount.toFixed(2)} ${to}`;
         return;
       }
 
