@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&family=Inconsolata:wght@200..900&display=swap" rel="stylesheet">
+  <title>14-Simple-Blog</title>
+  <style>
+    :root {
+      --color-foreground: #414647;
+      --color-background: #f5f4f4;
+      --color-white: #ffffff;
+      --color-border: #ccc;
+      --color-shadow: rgba(0, 0, 0, 0.1);
+      --color-shadow-hover: rgba(0, 0, 0, 0.15);
+      --color-primary: #007acc;
+      --color-warning: #ffaa00;
+      --color-danger: #e74c3c;
+      --color-muted: gray;
+
+      --font-size-base: 22px;
+      --font-size-small: 0.75rem;
+      --font-size-xsmall: 0.5rem;
+
+      --border-radius: 4px;
+      --border-radius-large: 8px;
+
+      --padding-small: 0.25rem 0.5rem;
+      --padding-medium: 0.5rem;
+      --padding-large: 1rem;
+    }
+
+    * {
+      font-size: var(--font-size-base);
+      color: var(--color-foreground);
+      background-color: var(--color-background);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Inconsolata", monospace;
+    }
+
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--padding-large);
+    }
+
+    .post-form {
+      margin-bottom: var(--padding-medium);
+    }
+
+    h1, h2 {
+font-family: "Andika", sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+    }
+
+    #title,
+    #content,
+    #tags,
+    .edit-title,
+    .edit-content {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: var(--padding-medium);
+      font-size: var(--font-size-small);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      background-color: var(--color-white);
+    }
+
+    #publishBtn,
+    .editBtn,
+    .deleteBtn {
+      margin-top: 0.5rem;
+      padding: var(--padding-small);
+      font-size: var(--font-size-small);
+      cursor: pointer;
+      border: none;
+      border-radius: var(--border-radius);
+    }
+
+    #publishBtn {
+      background-color: var(--color-primary);
+      color: var(--color-white);
+    }
+
+    .editBtn {
+      background-color: var(--color-warning);
+      color: var(--color-white);
+      margin-right: 0.5rem;
+    }
+
+    .deleteBtn {
+      background-color: var(--color-danger);
+      color: var(--color-white);
+    }
+
+    #charCount {
+      margin-top: 0.25rem;
+      font-size: var(--font-size-small);
+      color: var(--color-muted);
+    }
+
+    #tag-filters button {
+      margin: 0.25rem 0.25rem 0.25rem 0;
+      padding: var(--padding-small);
+      font-size: var(--font-size-small);
+      cursor: pointer;
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      background-color: var(--color-white);
+    }
+
+    #tag-filters button:hover {
+      background-color: #ddd;
+    }
+
+    .post {
+      background-color: var(--color-white);
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius-large);
+      padding: var(--padding-large);
+      margin-bottom: var(--padding-large);
+      box-shadow: 0 2px 6px var(--color-shadow);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+
+    .post h2 {
+      margin-bottom: 0.75rem;
+      background-color: var(--color-white);
+    }
+
+    .post .timestamp {
+      font-size: var(--font-size-small);
+      margin-bottom: 0.5rem;
+      background-color: var(--color-white);
+      color: var(--color-muted);
+    }
+
+    .post p {
+      font-size: var(--font-size-small);
+      line-height: 1.5;
+      background-color: var(--color-white);
+      margin-bottom: 0.75rem;
+    }
+
+    .post-tags {
+      margin: 0.1rem 0;
+      font-size: var(--font-size-small);
+      background-color: var(--color-white);
+      color: var(--color-muted);
+    }
+
+    .tag {
+      background-color: var(--color-white);
+      font-size: var(--font-size-small);
+      color: var(--color-muted);
+    }
+
+    #tag-filters {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Simple Blog</h1>
+
+  <div class="post-form">
+    <input type="text" id="title" placeholder="Post Title" />
+    <textarea id="content" rows="5" placeholder="Write your content here..."></textarea>
+    <div id="charCount">0 characters</div>
+    <input type="text" id="tags" placeholder="Tags (comma separated)" />
+    <button id="publishBtn">Publish</button>
+  </div>
+
+  <div id="tag-filters"></div>
+  <div id="post-feed"></div>
+
+  <script>
+// Get references to input and display elements from the DOM
+const contentInput = document.getElementById('content');
+const charCount = document.getElementById('charCount');
+const tagFilters = document.getElementById('tag-filters');
+const postFeed = document.getElementById('post-feed');
+
+// Initialize a Set to keep track of all unique tags
+let allTags = new Set();
+// Array to store all post objects
+let allPosts = [];
+
+// Save current list of posts to localStorage
+function saveToLocalStorage() {
+  localStorage.setItem('posts', JSON.stringify(allPosts));
+}
+
+// Load posts from localStorage and render them on the page
+function loadFromLocalStorage() {
+  const savedPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+  savedPosts.forEach(post => {
+    allPosts.push(post); // Add to the post list
+    post.tags.forEach(tag => allTags.add(tag)); // First add tags
+  });
+  savedPosts.forEach(renderPost); // Then render posts
+  updateTagFilters(); // Finally update filters
+}
+
+// Update character count display as user types content
+contentInput.addEventListener('input', () => {
+  charCount.textContent = `${contentInput.value.length} characters`;
+});
+
+// Create and display filter buttons for each tag
+function updateTagFilters() {
+  tagFilters.innerHTML = ''; // Clear existing filters
+  if (allPosts.length === 0) return; // Skip if no posts exist
+
+  // Create 'All' button to show all posts
+  const allBtn = document.createElement('button');
+  allBtn.textContent = 'All';
+  allBtn.addEventListener('click', () => {
+    document.querySelectorAll('#post-feed .post').forEach(post => {
+      post.style.display = 'block';
+    });
+  });
+  tagFilters.appendChild(allBtn);
+
+  // Create a button for each unique tag
+  allTags.forEach(tag => {
+    const btn = document.createElement('button');
+    btn.textContent = tag;
+    btn.addEventListener('click', () => filterPostsByTag(tag)); // Filter posts by tag on click
+    tagFilters.appendChild(btn);
+  });
+}
+
+// Show only posts that include the selected tag
+function filterPostsByTag(tag) {
+  document.querySelectorAll('#post-feed .post').forEach(post => {
+    const tags = post.dataset.tags.split(',');
+    post.style.display = tags.includes(tag) ? 'block' : 'none';
+  });
+}
+
+// Handle 'Publish' button click
+document.getElementById('publishBtn').addEventListener('click', () => {
+  const title = document.getElementById('title').value.trim();
+  const content = contentInput.value.trim();
+  const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+  // Validate input
+  if (!title || !content) {
+    alert('Please enter both a title and content.');
+    return;
+  }
+
+  // Create a new post object
+  const newPost = {
+    id: Date.now(), // Unique ID based on timestamp
+    title,
+    content,
+    tags,
+    timestamp: new Date().toLocaleString()
+  };
+
+  allPosts.unshift(newPost); // Add new post to the beginning of the array
+  tags.forEach(tag => allTags.add(tag)); // Add new tags to the Set
+
+  renderPost(newPost); // Display new post
+  updateTagFilters(); // Refresh tag filters
+  saveToLocalStorage(); // Save updated post list
+
+  // Clear form inputs
+  document.getElementById('title').value = '';
+  contentInput.value = '';
+  document.getElementById('tags').value = '';
+  charCount.textContent = '0 characters';
+});
+
+// Render a single post in the DOM
+function renderPost(post) {
+  const postElement = document.createElement('div');
+  postElement.className = 'post';
+  postElement.dataset.id = post.id; // Store post ID in data attribute
+  postElement.dataset.tags = post.tags.join(','); // Store tags
+
+  // Set the post's HTML structure
+  postElement.innerHTML = `
+    <h2 class="post-title">${post.title}</h2>
+    <p class="post-content">${post.content.replace(/\n/g, '<br>')}</p>
+    <div class="post-tags">Tags: ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join(', ')}</div>
+    <div class="timestamp">Published on ${post.timestamp}</div>
+    <button class="editBtn">Edit</button>
+    <button class="deleteBtn">Delete</button>
+  `;
+
+  postFeed.insertBefore(postElement, postFeed.firstChild); // Insert post at top
+
+  // Delete button functionality
+  postElement.querySelector('.deleteBtn').addEventListener('click', () => {
+    allPosts = allPosts.filter(p => p.id !== post.id); // Remove from data
+    postFeed.removeChild(postElement); // Remove from DOM
+
+    // Remove unused tags from Set
+    post.tags.forEach(tag => {
+      const stillUsed = allPosts.some(p => p.tags.includes(tag));
+      if (!stillUsed) allTags.delete(tag);
+    });
+
+    updateTagFilters(); // Refresh filters
+    saveToLocalStorage(); // Save updated post list
+  });
+
+  // Edit button functionality
+  const editBtn = postElement.querySelector('.editBtn');
+  editBtn.addEventListener('click', () => {
+    const titleEl = postElement.querySelector('.post-title');
+    const contentEl = postElement.querySelector('.post-content');
+
+    if (editBtn.textContent === 'Edit') {
+      // Switch to editing mode
+      const titleText = titleEl.textContent;
+      const contentText = contentEl.innerHTML.replace(/<br>/g, '\n');
+
+      titleEl.outerHTML = `<input class="edit-title" value="${titleText}" />`;
+      contentEl.outerHTML = `<textarea class="edit-content" rows="5">${contentText}</textarea>`;
+      editBtn.textContent = 'Save';
+    } else {
+      // Save edited post
+      const newTitle = postElement.querySelector('.edit-title').value.trim();
+      const newContent = postElement.querySelector('.edit-content').value.trim();
+
+      if (!newTitle || !newContent) {
+        alert('Title and content cannot be empty.');
+        return;
+      }
+
+      // Update the DOM with new content
+      postElement.querySelector('.edit-title').outerHTML = `<h2 class="post-title">${newTitle}</h2>`;
+      postElement.querySelector('.edit-content').outerHTML = `<p class="post-content">${newContent.replace(/\n/g, '<br>')}</p>`;
+      editBtn.textContent = 'Edit';
+
+      // Update the post in data array and save
+      const postIndex = allPosts.findIndex(p => p.id === post.id);
+      allPosts[postIndex].title = newTitle;
+      allPosts[postIndex].content = newContent;
+      saveToLocalStorage();
+    }
+  });
+}
+
+// Load and render existing posts on page load
+loadFromLocalStorage();
+
+  </script>
+
+</body>
+</html>
